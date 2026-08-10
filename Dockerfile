@@ -2,8 +2,8 @@
 FROM php:8.3-cli AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git unzip zip \
-    libpq-dev libgd-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev \
+    curl git unzip zip pkg-config \
+    libpq-dev libgd-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libcurl4-openssl-dev libzip-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
     pdo pdo_pgsql pdo_mysql gd bcmath curl mbstring xml zip \
@@ -22,7 +22,7 @@ COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions
 
 # Install runtime dependencies only (no dev packages)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 libgd3 libfreetype6 libjpeg62-turbo libpng16-16t64 \
+    libpq5 libgd3 libfreetype6 libjpeg62-turbo libpng16-16 \
     && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-enable pdo pdo_pgsql pdo_mysql gd bcmath curl mbstring xml zip \
     && a2enmod rewrite
