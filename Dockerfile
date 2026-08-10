@@ -1,39 +1,46 @@
-FROM railway/rails-nixpacks:latest
+FROM php:8.3-apache
+
+# Enable required PHP extensions
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    libgd-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    zip \
+    unzip \
+    git \
+    curl \
+    && docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    pdo_mysql \
+    gd \
+    bcmath \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Set working directory
-WORKDIR /app
+WORKDIR /var/www/html
 
-# Copy application files
-COPY . /app
+# Copy application
+COPY . /var/www/html
 
-# Install PHP and required extensions
-RUN apt-get update && apt-get install -y \
-    php8.3-cli \
-    php8.3-fpm \
-    php8.3-mysql \
-    php8.3-pgsql \
-    php8.3-sqlite3 \
-    php8.3-gd \
-    php8.3-curl \
-    php8.3-mbstring \
-    php8.3-xml \
-    php8.3-bcmath \
-    php8.3-zip \
-    composer \
-    && rm -rf /var/lib/apt/lists/*
+# Enable Apache rewrite module
+RUN a2enmod rewrite
+
+# Set document root
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+RUN sed -i 's|<Directory /var/www/html>|<Directory /var/www/html/public>|g' /etc/apache2/apache2.conf
 
 # Install dependencies
 RUN composer install --optimize-autoloader --no-scripts --no-interaction
 
-# Generate APP_KEY if not set
-RUN if [ -z "$APP_KEY" ]; then php artisan key:generate; fi
-
-# Run migrations
-RUN php artisan migrate --force
-
 # Set permissions
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
 
-CMD ["php", "-S", "0.0.0.0:80", "-t", "public/"]
+CMD ["apache2-foreground"]
