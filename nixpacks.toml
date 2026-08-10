@@ -1,0 +1,45 @@
+[build]
+nixpkgs.rev = "nixos-24.05"
+
+[phases.setup]
+dependsOn = ["installPhp"]
+
+[[phases.installPhp.nixpkgs]]
+pkg = "php83"
+pkg_config_path = "php83"
+
+[[phases.installPhp.nixpkgs]]
+pkg = "php83Extensions.gd"
+
+[[phases.installPhp.nixpkgs]]
+pkg = "php83Extensions.pdo"
+
+[[phases.installPhp.nixpkgs]]
+pkg = "php83Extensions.pdo_pgsql"
+
+[[phases.installPhp.nixpkgs]]
+pkg = "php83Extensions.pdo_mysql"
+
+[[phases.installPhp.nixpkgs]]
+pkg = "php83Extensions.bcmath"
+
+[[phases.installPhp.nixpkgs]]
+pkg = "php83Extensions.curl"
+
+[[phases.installPhp.nixpkgs]]
+pkg = "php83Extensions.mbstring"
+
+[[phases.installPhp.nixpkgs]]
+pkg = "php83Extensions.xml"
+
+[[phases.installPhp.nixpkgs]]
+pkg = "php83Extensions.zip"
+
+[[phases.installPhp.nixpkgs]]
+pkg = "composer"
+
+[phases.build]
+cmds = ["composer install --no-interaction --optimize-autoloader"]
+
+[start]
+cmd = "php -S 0.0.0.0:${PORT} -t public/"
