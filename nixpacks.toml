@@ -1,45 +1,16 @@
 [build]
+# Explicitly use nixpacks, not Dockerfile
 nixpkgs.rev = "nixos-24.05"
 
-[phases.setup]
-dependsOn = ["installPhp"]
-
-[[phases.installPhp.nixpkgs]]
-pkg = "php83"
-pkg_config_path = "php83"
-
-[[phases.installPhp.nixpkgs]]
-pkg = "php83Extensions.gd"
-
-[[phases.installPhp.nixpkgs]]
-pkg = "php83Extensions.pdo"
-
-[[phases.installPhp.nixpkgs]]
-pkg = "php83Extensions.pdo_pgsql"
-
-[[phases.installPhp.nixpkgs]]
-pkg = "php83Extensions.pdo_mysql"
-
-[[phases.installPhp.nixpkgs]]
-pkg = "php83Extensions.bcmath"
-
-[[phases.installPhp.nixpkgs]]
-pkg = "php83Extensions.curl"
-
-[[phases.installPhp.nixpkgs]]
-pkg = "php83Extensions.mbstring"
-
-[[phases.installPhp.nixpkgs]]
-pkg = "php83Extensions.xml"
-
-[[phases.installPhp.nixpkgs]]
-pkg = "php83Extensions.zip"
-
-[[phases.installPhp.nixpkgs]]
-pkg = "composer"
+[phases.installPhp]
+# Install PHP 8.3 with required extensions
+nixpkgs = ["php83", "php83Extensions.gd", "php83Extensions.pdo", "php83Extensions.pdo_pgsql", "php83Extensions.pdo_mysql", "php83Extensions.bcmath", "php83Extensions.curl", "php83Extensions.mbstring", "php83Extensions.xml", "php83Extensions.zip", "composer"]
 
 [phases.build]
-cmds = ["composer install --no-interaction --optimize-autoloader"]
+dependsOn = ["installPhp"]
+cmds = [
+  "composer install --no-interaction --optimize-autoloader --no-dev"
+]
 
 [start]
-cmd = "php -S 0.0.0.0:${PORT} -t public/"
+cmd = "php -S 0.0.0.0:${PORT:-8080} -t public/"
