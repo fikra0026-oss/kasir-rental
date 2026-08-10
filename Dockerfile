@@ -3,7 +3,7 @@ FROM php:8.3-cli AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl git unzip zip pkg-config \
-    libpq-dev libgd-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libcurl4-openssl-dev libzip-dev libonig-dev \
+    libpq-dev libgd-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libcurl4-openssl-dev libzip-dev libonig-dev libxml2-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
     pdo pdo_pgsql pdo_mysql gd bcmath curl mbstring xml zip \
