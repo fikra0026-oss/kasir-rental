@@ -1,5 +1,5 @@
 # Multi-stage build
-FROM php:8.3-cli as builder
+FROM php:8.3-cli AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl git unzip zip \
@@ -18,7 +18,7 @@ RUN composer install --optimize-autoloader --no-scripts --no-interaction
 FROM php:8.3-apache
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 libgd3 libfreetype6 libjpeg62-turbo libpng6 \
+    libpq5 libgd3 libfreetype6 libjpeg62-turbo libpng16-16t64 \
     && docker-php-ext-enable opcache \
     && a2enmod rewrite
 
