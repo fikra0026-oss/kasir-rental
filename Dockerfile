@@ -17,17 +17,18 @@ RUN composer install --optimize-autoloader --no-scripts --no-interaction
 # Runtime stage
 FROM php:8.3-apache
 
+# Copy compiled PHP extensions from builder
+COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+
+# Install runtime dependencies only (no dev packages)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 libgd3 libfreetype6 libjpeg62-turbo libpng16-16t64 \
-    && docker-php-ext-enable opcache \
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-enable pdo pdo_pgsql pdo_mysql gd bcmath curl mbstring xml zip \
     && a2enmod rewrite
-
-RUN docker-php-ext-install \
-    pdo pdo_pgsql pdo_mysql gd bcmath curl mbstring xml zip
 
 WORKDIR /var/www/html
 COPY --from=builder /app /var/www/html
-COPY --from=builder /usr/local/bin/composer /usr/local/bin/composer
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
