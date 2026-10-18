@@ -16,13 +16,6 @@
         <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
             @include('partials.alerts')
 
-            @php
-                $totalTransactions = $transactions->count();
-                $runningTransactions = $transactions->where('status', 'berjalan')->count();
-                $lunasTransactions = $transactions->where('payment_status', 'lunas')->count();
-                $totalOmzet = $transactions->sum('total');
-            @endphp
-
             <div class="mb-6 grid gap-4 md:grid-cols-4">
                 <div class="rounded-[24px] border border-slate-800 bg-slate-900/90 p-5 shadow-lg shadow-cyan-950/20">
                     <div class="text-sm uppercase tracking-[0.2em] text-slate-500">Total Transaksi</div>
@@ -112,7 +105,7 @@
                                                     @method('PATCH')
                                                     <select name="package_id" class="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none">
                                                         <option value="">Pilih paket</option>
-                                                        @foreach(App\Models\RentalPackage::orderBy('duration_minutes')->get() as $package)
+                                                        @foreach($packages as $package)
                                                             <option value="{{ $package->id }}" {{ ($transaction->package_id ?? null) == $package->id ? 'selected' : '' }}>{{ $package->name }} ({{ $package->duration_minutes }} menit)</option>
                                                         @endforeach
                                                     </select>
@@ -147,6 +140,40 @@
                                 </div>
                             </div>
 
+                            @if($transaction->status === 'berjalan')
+                                <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                                    <div class="mb-3 flex items-center justify-between gap-3">
+                                        <h4 class="text-sm font-semibold text-white">Tambah Makanan & Minuman</h4>
+                                        <span class="text-xs uppercase tracking-[0.12em] text-slate-400">Transaksi berjalan</span>
+                                    </div>
+
+                                    <form action="{{ route('transactions.food-drinks.store', $transaction) }}" method="POST" class="space-y-4">
+                                        @csrf
+                                        <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_140px] md:items-end">
+                                            <div>
+                                                <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-400">Pilih Produk</label>
+                                                <select name="products[0][product_id]" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-cyan-400">
+                                                    <option value="">-- Pilih makanan & minuman --</option>
+                                                    @foreach($availableProducts as $product)
+                                                        <option value="{{ $product->id }}">
+                                                            {{ $product->name }} • {{ ucfirst($product->category) }} • Rp {{ number_format($product->price, 0, ',', '.') }} • Stok {{ $product->stock }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-400">Qty</label>
+                                                <input type="number" name="products[0][quantity]" min="1" value="1" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-cyan-400">
+                                            </div>
+                                        </div>
+
+                                        <div class="flex justify-end">
+                                            <button type="submit" class="rounded-full bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-400">Tambah Pesanan</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            @endif
+
                             @if($transaction->items->isNotEmpty())
                                 <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                                     <div class="mb-3 flex items-center justify-between">
@@ -162,6 +189,7 @@
                                                     <th class="py-2 pr-4">Qty</th>
                                                     <th class="py-2 pr-4">Harga Satuan</th>
                                                     <th class="py-2 pr-4">Subtotal</th>
+                                                    <th class="py-2">Aksi</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -173,6 +201,15 @@
                                                             <td class="py-2 pr-4">{{ $item->quantity }}</td>
                                                             <td class="py-2 pr-4">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
                                                             <td class="py-2 pr-4">Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
+                                                            <td class="py-2">
+                                                                @if($transaction->isDeletable())
+                                                                    <form action="{{ route('transactions.food-drinks.destroy', [$transaction, $item]) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus pesanan ini?');">
+                                                                        @csrf
+                                                                        @method('DELETE')
+                                                                        <button type="submit" class="rounded-full border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 transition hover:bg-rose-500/20">Hapus</button>
+                                                                    </form>
+                                                                @endif
+                                                            </td>
                                                         </tr>
                                                     @endif
                                                 @endforeach
@@ -187,6 +224,10 @@
                             Belum ada transaksi yang tercatat.
                         </div>
                     @endforelse
+                </div>
+
+                <div class="mt-6">
+                    {{ $transactions->links() }}
                 </div>
             </div>
         </div>

@@ -38,6 +38,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store', 'update', 'destroy']);
     Route::get('food-drinks', [TransactionController::class, 'foodDrinksPage'])->name('food-drinks');
     Route::post('food-drinks', [TransactionController::class, 'storeFoodDrinks'])->name('food-drinks.store');
+    Route::post('transactions/{transaction}/food-drinks', [TransactionController::class, 'storeFoodDrinksForTransaction'])->name('transactions.food-drinks.store');
+    Route::delete('transactions/{transaction}/food-drinks/{item}', [TransactionController::class, 'destroyFoodDrinkItem'])->name('transactions.food-drinks.destroy');
     Route::post('transactions/{transaction}/finish', [TransactionController::class, 'finish'])->name('transactions.finish');
     Route::post('transactions/{transaction}/complete-payment', [TransactionController::class, 'completePayment'])->name('transactions.complete-payment');
 

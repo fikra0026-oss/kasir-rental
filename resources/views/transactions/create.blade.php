@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-2xl font-semibold text-slate-100">Transaksi Kasir</h2>
-                <p class="mt-1 text-sm text-slate-400">Buat transaksi rental PS dengan pilihan paket, member, dan produk.</p>
+                <p class="mt-1 text-sm text-slate-400">Buat transaksi rental PS baru atau catat transaksi dari hari sebelumnya.</p>
             </div>
             <a href="{{ route('transactions.index') }}" class="inline-flex items-center rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-400 hover:text-white">Riwayat Transaksi</a>
         </div>
@@ -16,6 +16,13 @@
                 <form action="{{ route('transactions.store') }}" method="POST">
                     @csrf
                     <div class="space-y-6">
+                        <div>
+                            <x-input-label for="occurred_at" value="Tanggal & Jam Transaksi" class="text-slate-300" />
+                            <x-text-input id="occurred_at" name="occurred_at" type="datetime-local" max="{{ now()->format('Y-m-d\TH:i') }}" class="mt-1 block w-full" value="{{ old('occurred_at', now()->format('Y-m-d\TH:i')) }}" required />
+                            <p class="mt-2 text-xs text-slate-400">Pilih tanggal kemarin atau sebelumnya untuk mencatat transaksi lampau. Transaksi lampau otomatis selesai dan lunas.</p>
+                            <x-input-error :messages="$errors->get('occurred_at')" class="mt-2" />
+                        </div>
+
                         <div class="grid gap-6 md:grid-cols-2">
                             <div>
                                 <x-input-label for="playstation_unit_id" value="Pilih Unit PS" class="text-slate-300" />
